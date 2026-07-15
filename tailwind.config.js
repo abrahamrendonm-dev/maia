@@ -7,8 +7,8 @@ export default {
     theme: {
         extend: {
             colors: {
-                'nido-verde': '#7A9482',
-                'nido-arena': '#F5F2ED',
+                'maia-verde': '#7A9482',
+                'maia-arena': '#F5F2ED',
             },
         },
     },

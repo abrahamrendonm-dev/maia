@@ -32,7 +32,7 @@ export const AuthForm = () => {
                     description: error.message
                 });
             } else {
-                toast.success(isSignUp ? "¡Bienvenida al nido! Revisa tu email." : "¡Qué alegría verte de nuevo! ✨");
+                toast.success(isSignUp ? "¡Bienvenida a MAIA! Revisa tu email." : "¡Qué alegría verte de nuevo! ✨");
             }
         } catch (err) {
             toast.error("Ocurrió un error inesperado");
