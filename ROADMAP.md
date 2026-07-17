@@ -1,5 +1,36 @@
 # MAIA vs. LactApp — Roadmap completo (con integración de Mercado Pago)
 
+## 0. Progreso (actualizado 2026-07-16)
+
+Desarrollo en pausa a partir de esta fecha. Antes de retomar, esto es lo que
+ya quedó implementado, commiteado y subido a `origin/master`, y lo que
+sigue pendiente.
+
+**Fase 1 — implementado:**
+- ✅ Múltiples bebés por mamá (gemelos/hermanos)
+- ✅ Panel de Asesora de Lactancia (B2B2C): vinculación por código, notas
+  profesionales, modo solo lectura
+- ✅ Extracción de leche conectada (inventario de leche)
+- ✅ Crecimiento (peso/talla): registro desde la Bitácora + vista de la
+  asesora
+- ✅ Plan de Parto: formulario funcional + vista legible (no JSON crudo)
+  para la asesora
+- ✅ Citas Médicas: CRUD con separación prenatal / mamá / bebé
+  (`migrations/004` a `006`), aviso visual de citas próximas en Home,
+  vista de asesora con las 3 categorías
+
+Todo lo anterior compila sin errores (`tsc --noEmit`). Crecimiento, Plan
+de Parto y Citas Médicas no se probaron manualmente en navegador durante
+esta sesión — hazlo antes de dar la Fase 1 por cerrada.
+
+**Fase 1 — pendiente de retomar:**
+- ⏸ Integración de pagos con Mercado Pago (ver sección 2.3 más abajo:
+  backend en Vercel Functions, plan de suscripción, webhook, gating de
+  funciones premium)
+- ⏸ Conversión de la app a PWA
+
+---
+
 ## 1. Matriz de paridad de funciones
 
 | Función de LactApp | Estado en MAIA | Fase |
