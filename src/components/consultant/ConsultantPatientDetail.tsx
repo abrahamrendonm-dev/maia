@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../../services/supabaseClient';
-import { ArrowLeft, Baby, Calendar, Droplets, Moon, Timer, ClipboardList, MessageSquare, Send } from 'lucide-react';
+import { ArrowLeft, Baby, Calendar, Droplets, Moon, Scale, Timer, ClipboardList, MessageSquare, Send } from 'lucide-react';
 import { toast } from 'sonner';
 import { MilkInventoryList } from '../MilkInventoryList';
 
@@ -24,6 +24,14 @@ interface Note {
     id: string;
     note: string;
     created_at: string;
+}
+
+interface GrowthMeasurement {
+    id: string;
+    child_id: string;
+    weight_grams: number | null;
+    height_cm: number | null;
+    measured_at: string;
 }
 
 const iconoPorTipo = (type: string) => {
@@ -57,6 +65,7 @@ export const ConsultantPatientDetail = ({ consultantId, patientId, patientName, 
     const [pregnancy, setPregnancy] = useState<any>(null);
     const [children, setChildren] = useState<{ id: string; name: string; birth_date: string }[]>([]);
     const [logs, setLogs] = useState<TrackingLog[]>([]);
+    const [growth, setGrowth] = useState<GrowthMeasurement[]>([]);
     const [birthPlan, setBirthPlan] = useState<any>(null);
     const [notes, setNotes] = useState<Note[]>([]);
     const [newNote, setNewNote] = useState('');
@@ -75,7 +84,7 @@ export const ConsultantPatientDetail = ({ consultantId, patientId, patientName, 
         const cargarDetalle = async () => {
             setLoading(true);
 
-            const [{ data: preg }, { data: kids }, { data: kidsLogs }, { data: plan }] = await Promise.all([
+            const [{ data: preg }, { data: kids }, { data: kidsLogs }, { data: plan }, { data: growthData }] = await Promise.all([
                 supabase.from('pregnancies').select('*').eq('parent_id', patientId).maybeSingle(),
                 supabase.from('children').select('id, name, birth_date').eq('parent_id', patientId),
                 supabase
@@ -85,12 +94,19 @@ export const ConsultantPatientDetail = ({ consultantId, patientId, patientName, 
                     .order('start_time', { ascending: false })
                     .limit(20),
                 supabase.from('birth_plans').select('*').eq('parent_id', patientId).maybeSingle(),
+                supabase
+                    .from('growth_measurements')
+                    .select('id, child_id, weight_grams, height_cm, measured_at')
+                    .eq('parent_id', patientId)
+                    .order('measured_at', { ascending: false })
+                    .limit(20),
             ]);
 
             setPregnancy(preg);
             setChildren(kids || []);
             setLogs(kidsLogs || []);
             setBirthPlan(plan);
+            setGrowth(growthData || []);
             await cargarNotas();
 
             setLoading(false);
@@ -212,6 +228,38 @@ export const ConsultantPatientDetail = ({ consultantId, patientId, patientName, 
                     </div>
                 ) : (
                     <p className="text-xs text-[#8B5E3C]/70 font-medium">Aún no hay registros en la bitácora.</p>
+                )}
+            </div>
+
+            {/* Crecimiento */}
+            <div className="bg-white border-2 border-[#F5F2ED] p-4 rounded-[1.5rem] space-y-3">
+                <div className="flex items-center gap-2">
+                    <Scale size={16} className="text-green-500" />
+                    <p className="text-[9px] font-black uppercase tracking-wider text-[#8B5E3C]">Crecimiento</p>
+                </div>
+                {growth.length > 0 ? (
+                    <div className="space-y-2">
+                        {growth.map((g) => {
+                            const child = children.find((c) => c.id === g.child_id);
+                            return (
+                                <div key={g.id} className="flex items-center justify-between text-xs border-b border-[#F5F2ED] pb-2 last:border-0 last:pb-0">
+                                    <div>
+                                        <span className="font-bold text-[#2D3436]">{child?.name || 'Bebé'}</span>
+                                        <span className="text-[#8B5E3C]/70 ml-2">
+                                            {g.weight_grams != null && `${(g.weight_grams / 1000).toFixed(2)} kg`}
+                                            {g.weight_grams != null && g.height_cm != null && ' · '}
+                                            {g.height_cm != null && `${g.height_cm} cm`}
+                                        </span>
+                                    </div>
+                                    <span className="text-[#8B5E3C]/70 font-medium">
+                                        {new Date(g.measured_at).toLocaleDateString('es-MX')}
+                                    </span>
+                                </div>
+                            );
+                        })}
+                    </div>
+                ) : (
+                    <p className="text-xs text-[#8B5E3C]/70 font-medium">Aún no hay mediciones registradas.</p>
                 )}
             </div>
 

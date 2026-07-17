@@ -4,6 +4,7 @@ import { Timer, Baby, Droplets, Utensils, Moon, History, ChevronDown } from 'luc
 import { toast } from 'sonner';
 import { LogExtraccionModal } from './LogExtraccionModal';
 import { MilkInventoryList } from './MilkInventoryList';
+import { LogCrecimientoModal } from './LogCrecimientoModal';
 
 interface Props {
     userId: string;
@@ -18,6 +19,7 @@ export const Bitacora = ({ userId }: Props) => {
     const [parentId, setParentId] = useState<string | null>(null); // "raíz familiar" (id de la mamá)
     const [savingQuick, setSavingQuick] = useState<'panal' | 'sueno' | null>(null);
     const [showExtraccion, setShowExtraccion] = useState(false);
+    const [showCrecimiento, setShowCrecimiento] = useState(false);
     const [showMilkInventory, setShowMilkInventory] = useState(false);
     const [milkRefreshToken, setMilkRefreshToken] = useState(0);
 
@@ -240,8 +242,12 @@ export const Bitacora = ({ userId }: Props) => {
                     <span className="font-bold text-sm text-[#2D3436]">Extraer</span>
                 </button>
 
-                {/* Peso/Talla (pendiente de conectar — no forma parte de esta limpieza) */}
-                <button className="bg-white p-5 rounded-[30px] border-2 border-[#F5F2ED] flex flex-col items-center gap-3 group active:scale-95 transition-all opacity-60">
+                {/* Peso/Talla */}
+                <button
+                    onClick={() => setShowCrecimiento(true)}
+                    disabled={!childId}
+                    className="bg-white p-5 rounded-[30px] border-2 border-[#F5F2ED] flex flex-col items-center gap-3 group active:scale-95 transition-all disabled:opacity-50"
+                >
                     <div className="w-10 h-10 bg-green-50 text-green-400 rounded-xl flex items-center justify-center group-hover:bg-green-400 group-hover:text-white transition-colors">
                         <Baby size={20} />
                     </div>
@@ -286,6 +292,16 @@ export const Bitacora = ({ userId }: Props) => {
                         setMilkRefreshToken((t) => t + 1);
                         setShowMilkInventory(true);
                     }}
+                />
+            )}
+
+            {showCrecimiento && childId && parentId && (
+                <LogCrecimientoModal
+                    childId={childId}
+                    parentId={parentId}
+                    childName={babyName}
+                    onClose={() => setShowCrecimiento(false)}
+                    onSaved={() => setShowCrecimiento(false)}
                 />
             )}
         </div>

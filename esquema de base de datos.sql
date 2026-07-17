@@ -73,6 +73,29 @@ create table public.forum_posts (
   constraint forum_posts_category_id_fkey foreign KEY (category_id) references forum_categories (id)
 ) TABLESPACE pg_default;
 
+create table public.growth_measurements (
+  id uuid not null default gen_random_uuid (),
+  child_id uuid not null,
+  parent_id uuid not null,
+  weight_grams integer null,
+  height_cm numeric(5, 2) null,
+  measured_at timestamp with time zone not null default now(),
+  notes text null,
+  created_at timestamp with time zone not null default now(),
+  constraint growth_measurements_pkey primary key (id),
+  constraint growth_measurements_child_id_fkey foreign KEY (child_id) references children (id) on delete CASCADE,
+  constraint growth_measurements_parent_id_fkey foreign KEY (parent_id) references profiles (id) on delete CASCADE,
+  constraint growth_measurements_has_data check (
+    (
+      weight_grams is not null
+      or height_cm is not null
+    )
+  )
+) TABLESPACE pg_default;
+
+create index if not exists idx_growth_measurements_child_id on public.growth_measurements (child_id) TABLESPACE pg_default;
+create index if not exists idx_growth_measurements_parent_id on public.growth_measurements (parent_id) TABLESPACE pg_default;
+
 create table public.milk_inventory (
   id uuid not null default gen_random_uuid (),
   parent_id uuid not null,
