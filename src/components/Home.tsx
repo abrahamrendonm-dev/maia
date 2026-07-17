@@ -4,6 +4,7 @@ import { Sparkles, Calendar, ClipboardList, BookOpen, Heart, Share2, Users, Note
 import { toast } from 'sonner';
 import { AddChildModal } from './AddChildModal';
 import { MiAsesora } from './consultant/MiAsesora';
+import { PlanDePartoModal } from './PlanDePartoModal';
 
 interface HomeProps {
   userId: string;
@@ -19,6 +20,7 @@ export const Home = ({ userId, onOpenBitacora }: HomeProps) => {
   const [targetParentId, setTargetParentId] = useState<string | null>(null);
   const [showAddChild, setShowAddChild] = useState(false);
   const [showMiAsesora, setShowMiAsesora] = useState(false);
+  const [showPlanParto, setShowPlanParto] = useState(false);
 
   const fetchStatus = async () => {
     try {
@@ -219,7 +221,10 @@ export const Home = ({ userId, onOpenBitacora }: HomeProps) => {
 
         {/* Cuadrícula de Acciones de la Aplicación */}
         <div className="grid grid-cols-2 gap-3">
-          <button className="bg-white border-2 border-[#F5F2ED] p-4 rounded-[1.5rem] flex flex-col items-center gap-2 hover:bg-[#7A9482]/5 transition-all active:scale-95 group">
+          <button
+            onClick={() => setShowPlanParto(true)}
+            className="bg-white border-2 border-[#F5F2ED] p-4 rounded-[1.5rem] flex flex-col items-center gap-2 hover:bg-[#7A9482]/5 transition-all active:scale-95 group"
+          >
             <ClipboardList className="text-[#7A9482] group-hover:scale-105 transition-transform" />
             <span className="text-[10px] font-bold uppercase tracking-wider text-[#2D3436]">Plan de Parto</span>
           </button>
@@ -240,6 +245,9 @@ export const Home = ({ userId, onOpenBitacora }: HomeProps) => {
       </div>
       {addChildModal}
       {miAsesoraModal}
+      {showPlanParto && targetParentId && (
+        <PlanDePartoModal parentId={targetParentId} onClose={() => setShowPlanParto(false)} />
+      )}
       </>
     );
   }

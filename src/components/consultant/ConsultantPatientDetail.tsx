@@ -195,9 +195,46 @@ export const ConsultantPatientDetail = ({ consultantId, patientId, patientName, 
                     <p className="text-[9px] font-black uppercase tracking-wider text-[#8B5E3C]">Plan de Parto</p>
                 </div>
                 {birthPlan && birthPlan.preferences && Object.keys(birthPlan.preferences).length > 0 ? (
-                    <pre className="text-[11px] text-[#2D3436] font-medium whitespace-pre-wrap">
-                        {JSON.stringify(birthPlan.preferences, null, 2)}
-                    </pre>
+                    (() => {
+                        const p = birthPlan.preferences;
+                        const etiquetaTipo: Record<string, string> = {
+                            vaginal: 'Vaginal',
+                            cesarea: 'Cesárea',
+                            sin_preferencia: 'Sin preferencia',
+                        };
+                        const etiquetaDolor: Record<string, string> = {
+                            natural: 'Natural',
+                            epidural: 'Epidural',
+                            sin_preferencia: 'Sin preferencia',
+                        };
+                        const alNacer = [
+                            p.piel_con_piel_inmediato && 'Contacto piel con piel inmediato',
+                            p.lactancia_primera_hora && 'Lactancia en la primera hora',
+                            p.evitar_formula_sin_indicacion && 'Evitar fórmula sin indicación médica',
+                        ].filter(Boolean) as string[];
+
+                        return (
+                            <div className="space-y-2 text-xs text-[#2D3436]">
+                                <p><span className="font-bold">Tipo de parto:</span> {etiquetaTipo[p.tipo_parto] || 'No especificado'}</p>
+                                <p><span className="font-bold">Manejo del dolor:</span> {etiquetaDolor[p.manejo_dolor] || 'No especificado'}</p>
+                                {p.acompanante && <p><span className="font-bold">Acompañante:</span> {p.acompanante}</p>}
+                                {alNacer.length > 0 && (
+                                    <p><span className="font-bold">Al nacer:</span> {alNacer.join(', ')}</p>
+                                )}
+                                {(p.contacto1_nombre || p.contacto2_nombre) && (
+                                    <p>
+                                        <span className="font-bold">Contactos de emergencia:</span>{' '}
+                                        {[
+                                            p.contacto1_nombre && `${p.contacto1_nombre} (${p.contacto1_telefono || 'sin teléfono'})`,
+                                            p.contacto2_nombre && `${p.contacto2_nombre} (${p.contacto2_telefono || 'sin teléfono'})`,
+                                        ].filter(Boolean).join(', ')}
+                                    </p>
+                                )}
+                                {p.cosas_a_evitar && <p><span className="font-bold">Prefiere evitar:</span> {p.cosas_a_evitar}</p>}
+                                {p.notas_adicionales && <p><span className="font-bold">Notas:</span> {p.notas_adicionales}</p>}
+                            </div>
+                        );
+                    })()
                 ) : (
                     <p className="text-xs text-[#8B5E3C]/70 font-medium">Aún no lo ha configurado.</p>
                 )}
