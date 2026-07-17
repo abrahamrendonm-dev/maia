@@ -5,11 +5,16 @@ import { toast } from 'sonner';
 import { AddChildModal } from './AddChildModal';
 import { MiAsesora } from './consultant/MiAsesora';
 import { PlanDePartoModal } from './PlanDePartoModal';
+import { CitasMedicasModal } from './CitasMedicasModal';
 
 interface HomeProps {
   userId: string;
   onOpenBitacora?: () => void;
 }
+
+const PRENATAL_CHIPS = ['Ultrasonido', 'Control de crecimiento fetal', 'Análisis', 'Otro'];
+const POSPARTO_MAMA_CHIPS = ['Control posparto', 'Análisis', 'Otro'];
+const BEBE_CHIPS = ['Pediatra', 'Vacuna', 'Control de peso', 'Otro'];
 
 export const Home = ({ userId, onOpenBitacora }: HomeProps) => {
   const [loading, setLoading] = useState(true);
@@ -21,6 +26,10 @@ export const Home = ({ userId, onOpenBitacora }: HomeProps) => {
   const [showAddChild, setShowAddChild] = useState(false);
   const [showMiAsesora, setShowMiAsesora] = useState(false);
   const [showPlanParto, setShowPlanParto] = useState(false);
+  const [citasModal, setCitasModal] = useState<'mama' | 'bebe' | null>(null);
+  const [upcomingAppointments, setUpcomingAppointments] = useState<
+    { id: string; type: string; appointment_date: string; child_name: string; subject: 'mama' | 'bebe' }[]
+  >([]);
 
   const fetchStatus = async () => {
     try {
@@ -61,6 +70,28 @@ export const Home = ({ userId, onOpenBitacora }: HomeProps) => {
 
       if (childrenError) throw childrenError;
       setChildren(childrenData || []);
+
+      // 5. Aviso de citas próximas (siguientes 3 días) — solo recordatorio visual en
+      // Home, sin notificaciones push (eso es Fase 2).
+      const en3Dias = new Date();
+      en3Dias.setDate(en3Dias.getDate() + 3);
+      const { data: appointmentsData } = await supabase
+        .from('appointments')
+        .select('id, type, appointment_date, child_id, subject')
+        .eq('parent_id', resolvedParentId)
+        .gte('appointment_date', new Date().toISOString())
+        .lte('appointment_date', en3Dias.toISOString())
+        .order('appointment_date', { ascending: true });
+
+      setUpcomingAppointments(
+        (appointmentsData || []).map((a) => ({
+          id: a.id,
+          type: a.type,
+          appointment_date: a.appointment_date,
+          child_name: (childrenData || []).find((c) => c.id === a.child_id)?.name || 'tu bebé',
+          subject: a.subject,
+        }))
+      );
     } catch (error: any) {
       console.error('Error al sincronizar datos del Home:', error.message);
     } finally {
@@ -147,10 +178,68 @@ export const Home = ({ userId, onOpenBitacora }: HomeProps) => {
     <MiAsesora patientId={targetParentId} onClose={() => setShowMiAsesora(false)} />
   );
 
+  // Aviso visual de cita próxima (siguientes 3 días) — recordatorio simple sin
+  // notificaciones push, para no perder vacunas/controles aunque solo funcione si
+  // se abre la app.
+  const upcomingAppointmentsCard = upcomingAppointments.length > 0 && (
+    <div className="bg-orange-50 border-2 border-orange-200 p-4 rounded-[1.5rem] space-y-2">
+      <div className="flex items-center gap-2">
+        <Stethoscope size={16} className="text-orange-500" />
+        <p className="text-[9px] font-black uppercase tracking-wider text-orange-700">Cita próxima</p>
+      </div>
+      {upcomingAppointments.map((a) => (
+        <p key={a.id} className="text-xs font-bold text-[#2D3436] flex items-center gap-1.5">
+          {a.subject === 'bebe' ? <Baby size={12} className="shrink-0" /> : <Heart size={12} className="shrink-0" />}
+          {a.type} {a.subject === 'bebe' ? `de ${a.child_name}` : 'de mamá'} —{' '}
+          {new Date(a.appointment_date).toLocaleString('es-MX', { dateStyle: 'medium', timeStyle: 'short' })}
+        </p>
+      ))}
+    </div>
+  );
+
+  const citasMamaButton = targetParentId && (
+    <button
+      onClick={() => setCitasModal('mama')}
+      className="w-full bg-white border-2 border-[#F5F2ED] p-3.5 rounded-[1.5rem] flex items-center justify-center gap-2 font-black text-xs uppercase tracking-widest text-[#7A9482] hover:bg-[#7A9482]/5 transition-all active:scale-95"
+    >
+      <Calendar size={16} /> Citas de mamá
+    </button>
+  );
+
+  const citasBebeButton = targetParentId && (
+    <button
+      onClick={() => setCitasModal('bebe')}
+      className="w-full bg-white border-2 border-[#F5F2ED] p-3.5 rounded-[1.5rem] flex items-center justify-center gap-2 font-black text-xs uppercase tracking-widest text-[#7A9482] hover:bg-[#7A9482]/5 transition-all active:scale-95"
+    >
+      <Baby size={16} /> Citas de bebé
+    </button>
+  );
+
+  const citasMedicasModal = citasModal && targetParentId && (
+    <CitasMedicasModal
+      parentId={targetParentId}
+      subject={citasModal}
+      pregnancyId={citasModal === 'mama' ? pregnancy?.id ?? null : null}
+      kids={citasModal === 'bebe' ? children : []}
+      title={citasModal === 'mama' ? (pregnancy ? 'Citas Médicas' : 'Citas de mamá') : 'Citas de bebé'}
+      quickTypes={
+        citasModal === 'mama'
+          ? pregnancy
+            ? PRENATAL_CHIPS
+            : POSPARTO_MAMA_CHIPS
+          : BEBE_CHIPS
+      }
+      onClose={() => setCitasModal(null)}
+      onChanged={fetchStatus}
+    />
+  );
+
   if (pregnancy) {
     return (
       <>
       <div className="space-y-6 animate-in fade-in duration-700">
+
+        {upcomingAppointmentsCard}
 
         {/* Tarjeta de Progreso Principal (Gradiente Verde MAIA) */}
         <div className="bg-gradient-to-br from-[#7A9482] to-[#8BA895] p-6 rounded-[2.5rem] text-white shadow-xl relative overflow-hidden">
@@ -228,7 +317,10 @@ export const Home = ({ userId, onOpenBitacora }: HomeProps) => {
             <ClipboardList className="text-[#7A9482] group-hover:scale-105 transition-transform" />
             <span className="text-[10px] font-bold uppercase tracking-wider text-[#2D3436]">Plan de Parto</span>
           </button>
-          <button className="bg-white border-2 border-[#F5F2ED] p-4 rounded-[1.5rem] flex flex-col items-center gap-2 hover:bg-[#7A9482]/5 transition-all active:scale-95 group">
+          <button
+            onClick={() => setCitasModal('mama')}
+            className="bg-white border-2 border-[#F5F2ED] p-4 rounded-[1.5rem] flex flex-col items-center gap-2 hover:bg-[#7A9482]/5 transition-all active:scale-95 group"
+          >
             <Calendar className="text-[#7A9482] group-hover:scale-105 transition-transform" />
             <span className="text-[10px] font-bold uppercase tracking-wider text-[#2D3436]">Citas Médicas</span>
           </button>
@@ -245,6 +337,7 @@ export const Home = ({ userId, onOpenBitacora }: HomeProps) => {
       </div>
       {addChildModal}
       {miAsesoraModal}
+      {citasMedicasModal}
       {showPlanParto && targetParentId && (
         <PlanDePartoModal parentId={targetParentId} onClose={() => setShowPlanParto(false)} />
       )}
@@ -256,6 +349,8 @@ export const Home = ({ userId, onOpenBitacora }: HomeProps) => {
   return (
     <>
     <div className="space-y-6 flex flex-col items-center justify-center min-h-[300px] animate-in fade-in">
+      {upcomingAppointmentsCard && <div className="w-full max-w-xs">{upcomingAppointmentsCard}</div>}
+
       <div className="bg-[#FFFDF9] border-2 border-[#F5F2ED] p-8 rounded-[2.5rem] text-center max-w-xs shadow-sm">
         <div className="w-16 h-16 bg-[#7A9482]/10 rounded-full flex items-center justify-center mx-auto mb-3 text-[#7A9482]">
           <Heart size={28} />
@@ -269,6 +364,8 @@ export const Home = ({ userId, onOpenBitacora }: HomeProps) => {
       <div className="w-full max-w-xs space-y-3">
         {childrenSection}
         {miAsesoraButton}
+        {citasMamaButton}
+        {citasBebeButton}
       </div>
 
       {onOpenBitacora && (
@@ -286,6 +383,7 @@ export const Home = ({ userId, onOpenBitacora }: HomeProps) => {
     </div>
     {addChildModal}
     {miAsesoraModal}
+    {citasMedicasModal}
     </>
   );
 };

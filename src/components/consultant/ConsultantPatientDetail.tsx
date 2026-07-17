@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../../services/supabaseClient';
-import { ArrowLeft, Baby, Calendar, Droplets, Moon, Scale, Timer, ClipboardList, MessageSquare, Send } from 'lucide-react';
+import { ArrowLeft, Baby, Calendar, Droplets, Moon, Scale, Stethoscope, Timer, ClipboardList, MessageSquare, Send } from 'lucide-react';
 import { toast } from 'sonner';
 import { MilkInventoryList } from '../MilkInventoryList';
 
@@ -32,6 +32,16 @@ interface GrowthMeasurement {
     weight_grams: number | null;
     height_cm: number | null;
     measured_at: string;
+}
+
+interface Appointment {
+    id: string;
+    child_id: string | null;
+    pregnancy_id: string | null;
+    subject: 'mama' | 'bebe';
+    appointment_date: string;
+    type: string;
+    doctor: string | null;
 }
 
 const iconoPorTipo = (type: string) => {
@@ -66,6 +76,7 @@ export const ConsultantPatientDetail = ({ consultantId, patientId, patientName, 
     const [children, setChildren] = useState<{ id: string; name: string; birth_date: string }[]>([]);
     const [logs, setLogs] = useState<TrackingLog[]>([]);
     const [growth, setGrowth] = useState<GrowthMeasurement[]>([]);
+    const [appointments, setAppointments] = useState<Appointment[]>([]);
     const [birthPlan, setBirthPlan] = useState<any>(null);
     const [notes, setNotes] = useState<Note[]>([]);
     const [newNote, setNewNote] = useState('');
@@ -84,29 +95,37 @@ export const ConsultantPatientDetail = ({ consultantId, patientId, patientName, 
         const cargarDetalle = async () => {
             setLoading(true);
 
-            const [{ data: preg }, { data: kids }, { data: kidsLogs }, { data: plan }, { data: growthData }] = await Promise.all([
-                supabase.from('pregnancies').select('*').eq('parent_id', patientId).maybeSingle(),
-                supabase.from('children').select('id, name, birth_date').eq('parent_id', patientId),
-                supabase
-                    .from('tracking_logs')
-                    .select('id, type, start_time, end_time, metadata, child_name')
-                    .eq('parent_id', patientId)
-                    .order('start_time', { ascending: false })
-                    .limit(20),
-                supabase.from('birth_plans').select('*').eq('parent_id', patientId).maybeSingle(),
-                supabase
-                    .from('growth_measurements')
-                    .select('id, child_id, weight_grams, height_cm, measured_at')
-                    .eq('parent_id', patientId)
-                    .order('measured_at', { ascending: false })
-                    .limit(20),
-            ]);
+            const [{ data: preg }, { data: kids }, { data: kidsLogs }, { data: plan }, { data: growthData }, { data: appointmentsData }] =
+                await Promise.all([
+                    supabase.from('pregnancies').select('*').eq('parent_id', patientId).maybeSingle(),
+                    supabase.from('children').select('id, name, birth_date').eq('parent_id', patientId),
+                    supabase
+                        .from('tracking_logs')
+                        .select('id, type, start_time, end_time, metadata, child_name')
+                        .eq('parent_id', patientId)
+                        .order('start_time', { ascending: false })
+                        .limit(20),
+                    supabase.from('birth_plans').select('*').eq('parent_id', patientId).maybeSingle(),
+                    supabase
+                        .from('growth_measurements')
+                        .select('id, child_id, weight_grams, height_cm, measured_at')
+                        .eq('parent_id', patientId)
+                        .order('measured_at', { ascending: false })
+                        .limit(20),
+                    supabase
+                        .from('appointments')
+                        .select('id, child_id, pregnancy_id, subject, appointment_date, type, doctor')
+                        .eq('parent_id', patientId)
+                        .order('appointment_date', { ascending: false })
+                        .limit(20),
+                ]);
 
             setPregnancy(preg);
             setChildren(kids || []);
             setLogs(kidsLogs || []);
             setBirthPlan(plan);
             setGrowth(growthData || []);
+            setAppointments(appointmentsData || []);
             await cargarNotas();
 
             setLoading(false);
@@ -298,6 +317,69 @@ export const ConsultantPatientDetail = ({ consultantId, patientId, patientName, 
                 ) : (
                     <p className="text-xs text-[#8B5E3C]/70 font-medium">Aún no hay mediciones registradas.</p>
                 )}
+            </div>
+
+            {/* Citas médicas */}
+            <div className="bg-white border-2 border-[#F5F2ED] p-4 rounded-[1.5rem] space-y-4">
+                <div className="flex items-center gap-2">
+                    <Stethoscope size={16} className="text-[#7A9482]" />
+                    <p className="text-[9px] font-black uppercase tracking-wider text-[#8B5E3C]">Citas Médicas</p>
+                </div>
+                {(() => {
+                    const prenatales = appointments.filter((a) => a.subject === 'mama' && a.pregnancy_id !== null);
+                    const posparoMama = appointments.filter((a) => a.subject === 'mama' && a.pregnancy_id === null);
+                    const bebe = appointments.filter((a) => a.subject === 'bebe');
+
+                    const renderCita = (a: Appointment) => (
+                        <div key={a.id} className="flex items-center justify-between text-xs border-b border-[#F5F2ED] pb-2 last:border-0 last:pb-0">
+                            <div>
+                                <span className="font-bold text-[#2D3436]">{a.type}</span>
+                                {a.subject === 'bebe' && (
+                                    <span className="text-[#8B5E3C]/70 ml-2">
+                                        {children.find((c) => c.id === a.child_id)?.name || 'Bebé'}
+                                    </span>
+                                )}
+                                {a.doctor && <span className="text-[#8B5E3C]/70 ml-2">· {a.doctor}</span>}
+                            </div>
+                            <span className="text-[#8B5E3C]/70 font-medium">
+                                {new Date(a.appointment_date).toLocaleString('es-MX', { dateStyle: 'short', timeStyle: 'short' })}
+                            </span>
+                        </div>
+                    );
+
+                    if (appointments.length === 0) {
+                        return <p className="text-xs text-[#8B5E3C]/70 font-medium">Aún no hay citas registradas.</p>;
+                    }
+
+                    return (
+                        <>
+                            <div className="space-y-2">
+                                <p className="text-[9px] font-black uppercase tracking-wider text-[#8B5E3C]/60">Prenatal</p>
+                                {prenatales.length > 0 ? (
+                                    <div className="space-y-2">{prenatales.map(renderCita)}</div>
+                                ) : (
+                                    <p className="text-xs text-[#8B5E3C]/70 font-medium">Sin citas prenatales.</p>
+                                )}
+                            </div>
+                            <div className="space-y-2">
+                                <p className="text-[9px] font-black uppercase tracking-wider text-[#8B5E3C]/60">Posparto de mamá</p>
+                                {posparoMama.length > 0 ? (
+                                    <div className="space-y-2">{posparoMama.map(renderCita)}</div>
+                                ) : (
+                                    <p className="text-xs text-[#8B5E3C]/70 font-medium">Sin citas posparto de mamá.</p>
+                                )}
+                            </div>
+                            <div className="space-y-2">
+                                <p className="text-[9px] font-black uppercase tracking-wider text-[#8B5E3C]/60">Bebé</p>
+                                {bebe.length > 0 ? (
+                                    <div className="space-y-2">{bebe.map(renderCita)}</div>
+                                ) : (
+                                    <p className="text-xs text-[#8B5E3C]/70 font-medium">Sin citas de bebé.</p>
+                                )}
+                            </div>
+                        </>
+                    );
+                })()}
             </div>
 
             {/* Leche extraída */}

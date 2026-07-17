@@ -16,6 +16,30 @@ create table public.active_timers (
   )
 ) TABLESPACE pg_default;
 
+create table public.appointments (
+  id uuid not null default gen_random_uuid (),
+  child_id uuid null,
+  parent_id uuid not null,
+  appointment_date timestamp with time zone not null,
+  type text not null,
+  doctor text null,
+  notes text null,
+  created_at timestamp with time zone not null default now(),
+  pregnancy_id uuid null,
+  subject text not null default 'bebe',
+  constraint appointments_pkey primary key (id),
+  constraint appointments_child_id_fkey foreign KEY (child_id) references children (id) on delete CASCADE,
+  constraint appointments_parent_id_fkey foreign KEY (parent_id) references profiles (id) on delete CASCADE,
+  constraint appointments_pregnancy_id_fkey foreign KEY (pregnancy_id) references pregnancies (id) on delete set null,
+  constraint appointments_subject_check check ((subject = any (array['mama'::text, 'bebe'::text]))),
+  constraint appointments_subject_child_check check ((subject <> 'bebe'::text or child_id is not null))
+) TABLESPACE pg_default;
+
+create index if not exists idx_appointments_child_id on public.appointments (child_id) TABLESPACE pg_default;
+create index if not exists idx_appointments_parent_id on public.appointments (parent_id) TABLESPACE pg_default;
+create index if not exists idx_appointments_date on public.appointments (appointment_date) TABLESPACE pg_default;
+create index if not exists idx_appointments_pregnancy_id on public.appointments (pregnancy_id) TABLESPACE pg_default;
+
 create table public.birth_plans (
   id uuid not null default extensions.uuid_generate_v4 (),
   parent_id uuid null,
