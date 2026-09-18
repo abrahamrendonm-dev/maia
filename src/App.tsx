@@ -7,7 +7,6 @@ import { PartnerView } from './components/views/PartnerView';
 import { SupportView } from './components/views/SupportView';
 import { ConsultantDashboard } from './components/consultant/ConsultantDashboard';
 import { Bird, LogOut, Home as HomeIcon } from 'lucide-react';
-import { Toaster } from 'sonner';
 import { supabase } from './services/supabaseClient';
 import { useState, useEffect } from 'react';
 
@@ -116,8 +115,6 @@ function App() {
 
   return (
     <div className="min-h-screen bg-[#F5F2ED] p-4 sm:p-6 flex flex-col items-center">
-      <Toaster position="top-center" richColors closeButton />
-      
       {/* Encabezado Estable */}
       <header className="text-center mt-6 mb-8">
         <div className="bg-[#7A9482] w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-2 shadow-lg border-4 border-white transition-all active:scale-95">

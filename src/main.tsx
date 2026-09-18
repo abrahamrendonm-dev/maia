@@ -1,6 +1,7 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { Toaster } from 'sonner'
 import './index.css'
 import App from './App.tsx'
 import { BlogChannelPage } from './pages/blog/BlogChannelPage.tsx'
@@ -12,6 +13,7 @@ import { BlogEditorForm } from './pages/blog-editor/BlogEditorForm.tsx'
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <BrowserRouter>
+      <Toaster position="top-center" richColors closeButton />
       <Routes>
         <Route path="/blog/:channel" element={<BlogChannelPage />} />
         <Route path="/blog/:channel/:slug" element={<BlogPostPage />} />
