@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { supabase } from '../services/supabaseClient';
-import { Baby, Calendar, Scale, Ruler, Plus, Check } from 'lucide-react';
+import { Baby, Calendar, Scale, Ruler, Check } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface RegistroPerfilProps {

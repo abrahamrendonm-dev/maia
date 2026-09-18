@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { supabase } from '../../services/supabaseClient';
-import { ArrowRight, Calendar, Phone, User, Users, Check } from 'lucide-react';
+import { ArrowRight, Check } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface DatosPersonalesProps {

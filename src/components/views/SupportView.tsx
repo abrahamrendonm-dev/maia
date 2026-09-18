@@ -1,6 +1,5 @@
-import React from 'react';
 import { Home } from '../Home';
-import { Users, Info } from 'lucide-react';
+import { Info } from 'lucide-react';
 
 interface ViewProps {
   userId: string;

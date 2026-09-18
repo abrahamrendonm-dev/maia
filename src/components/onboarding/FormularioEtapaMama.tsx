@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { supabase } from '../../services/supabaseClient';
-import { Sparkles, Calendar, Baby, ArrowRight, Check } from 'lucide-react';
+import { Sparkles, Calendar, Baby, ArrowRight } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface FormularioEtapaProps {

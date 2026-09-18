@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { supabase } from '../services/supabaseClient';
-import { User, Users, Heart, Key, CheckCircle, ArrowRight, ShieldAlert } from 'lucide-react';
+import { User, Users, Heart, Key, CheckCircle, ArrowRight } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface OnboardingProps {

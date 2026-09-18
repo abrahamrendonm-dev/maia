@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { supabase } from '../services/supabaseClient';
 import { Droplets, Check } from 'lucide-react';
 import { toast } from 'sonner';

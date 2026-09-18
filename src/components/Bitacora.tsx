@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '../services/supabaseClient';
 import { Timer, Baby, Droplets, Utensils, Moon, History, ChevronDown } from 'lucide-react';
 import { toast } from 'sonner';
