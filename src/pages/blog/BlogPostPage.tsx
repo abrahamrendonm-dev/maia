@@ -4,6 +4,7 @@ import { supabase } from '../../services/supabaseClient';
 import { isBlogChannel } from './channels';
 import { BlogNotFound } from './BlogNotFound';
 import { renderTiptapContent } from './tiptapRenderer';
+import { ShareButtons } from './ShareButtons';
 
 interface Post {
   id: string;
@@ -128,6 +129,8 @@ export const BlogPostPage = () => {
         {post.cover_image && <img src={post.cover_image} alt="" className="w-full mb-10 rounded" />}
 
         <div className="text-lg">{renderTiptapContent(post.content)}</div>
+
+        <ShareButtons title={post.title} excerpt={post.excerpt} />
       </div>
     </article>
   );
