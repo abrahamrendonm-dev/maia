@@ -14,10 +14,14 @@ const BLOG_BASE_URL = 'https://maia-pearl.vercel.app';
 // (VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY), leídas aquí vía
 // process.env — no es una credencial nueva ni duplicada, solo un cliente
 // aparte para un runtime distinto.
-const supabase = createClient(
-  process.env.VITE_SUPABASE_URL ?? '',
-  process.env.VITE_SUPABASE_ANON_KEY ?? '',
-);
+const supabaseUrl = process.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = process.env.VITE_SUPABASE_ANON_KEY;
+
+// createClient('', '') lanza de inmediato si faltan estas env vars en el
+// proyecto de Vercel (son distintas del .env local, que no se sube). Sin
+// este guard, esa excepción tumba la función entera con un
+// FUNCTION_INVOCATION_FAILED opaco en vez de decir qué falta.
+const supabase = supabaseUrl && supabaseAnonKey ? createClient(supabaseUrl, supabaseAnonKey) : null;
 
 function escapeHtml(value: string): string {
   return value
@@ -33,6 +37,11 @@ function sendNotFound(res: VercelResponse) {
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+  if (!supabase) {
+    console.error('api/og: faltan VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY en las env vars de Vercel');
+    return res.status(500).send('Configuración de Supabase faltante en el servidor');
+  }
+
   const channel = typeof req.query.channel === 'string' ? req.query.channel : '';
   const slug = typeof req.query.slug === 'string' ? req.query.slug : '';
 
