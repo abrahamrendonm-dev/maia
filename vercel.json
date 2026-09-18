@@ -1,0 +1,19 @@
+{
+  "rewrites": [
+    {
+      "source": "/blog/:channel/:slug",
+      "has": [
+        {
+          "type": "header",
+          "key": "user-agent",
+          "value": "(facebookexternalhit|WhatsApp|LinkedInBot|Twitterbot|Slackbot|TelegramBot)"
+        }
+      ],
+      "destination": "/api/og?channel=:channel&slug=:slug"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}
