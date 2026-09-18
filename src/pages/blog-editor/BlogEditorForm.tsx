@@ -188,7 +188,7 @@ export const BlogEditorForm = () => {
     if (isNew) {
       const { data, error } = await supabase.from('blog_posts').insert(payload).select('id').single();
       if (error || !data) {
-        toast.error('No se pudo crear el post.');
+        toast.error(`No se pudo crear el post: ${error?.message ?? 'error desconocido'}`);
         setSaving(false);
         return;
       }
@@ -196,7 +196,7 @@ export const BlogEditorForm = () => {
     } else {
       const { error } = await supabase.from('blog_posts').update(payload).eq('id', postId!);
       if (error) {
-        toast.error('No se pudo guardar el post.');
+        toast.error(`No se pudo guardar el post: ${error.message}`);
         setSaving(false);
         return;
       }
