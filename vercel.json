@@ -6,7 +6,7 @@
         {
           "type": "header",
           "key": "user-agent",
-          "value": "(facebookexternalhit|WhatsApp|LinkedInBot|Twitterbot|Slackbot|TelegramBot)"
+          "value": ".*(facebookexternalhit|WhatsApp|LinkedInBot|Twitterbot|Slackbot|TelegramBot).*"
         }
       ],
       "destination": "/api/og?channel=:channel&slug=:slug"
