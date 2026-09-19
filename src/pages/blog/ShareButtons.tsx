@@ -28,23 +28,21 @@ export const ShareButtons = ({ title, excerpt }: ShareButtonsProps) => {
     }
   };
 
-  if (canNativeShare) {
-    return (
-      <div className="mt-12 pt-8 border-t border-[#2D3436]/10">
-        <button type="button" onClick={handleNativeShare} className={linkClass}>
-          <Share2 size={16} />
-          Compartir
-        </button>
-      </div>
-    );
-  }
-
   const url = window.location.href;
   const encodedUrl = encodeURIComponent(url);
   const encodedTitleAndUrl = encodeURIComponent(`${title} ${url}`);
 
   return (
     <div className="mt-12 pt-8 border-t border-[#2D3436]/10 flex flex-wrap gap-6">
+      {/* navigator.share ya no implica "es móvil" — varios navegadores de
+          escritorio también lo implementan. Se muestra como opción extra,
+          no en lugar de los enlaces directos. */}
+      {canNativeShare && (
+        <button type="button" onClick={handleNativeShare} className={linkClass}>
+          <Share2 size={16} />
+          Compartir
+        </button>
+      )}
       <a
         href={`https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`}
         target="_blank"
