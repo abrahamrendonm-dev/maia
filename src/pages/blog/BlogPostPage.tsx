@@ -5,6 +5,7 @@ import { isBlogChannel } from './channels';
 import { BlogNotFound } from './BlogNotFound';
 import { renderTiptapContent } from './tiptapRenderer';
 import { ShareButtons } from './ShareButtons';
+import { Footer } from './Footer';
 
 interface Post {
   id: string;
@@ -131,6 +132,8 @@ export const BlogPostPage = () => {
         <div className="text-lg">{renderTiptapContent(post.content)}</div>
 
         <ShareButtons title={post.title} excerpt={post.excerpt} />
+
+        <Footer />
       </div>
     </article>
   );
