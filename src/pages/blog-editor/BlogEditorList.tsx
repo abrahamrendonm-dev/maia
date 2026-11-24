@@ -35,12 +35,20 @@ export const BlogEditorList = () => {
       <div className="max-w-4xl mx-auto">
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-2xl font-black text-[#7A9482]">Blog — Posts</h1>
-          <Link
-            to="/blog-editor/new"
-            className="bg-[#7A9482] text-white px-4 py-2 rounded-xl text-sm font-bold uppercase tracking-wide"
-          >
-            Nuevo post
-          </Link>
+          <div className="flex gap-3">
+            <Link
+              to="/blog-editor/recursos"
+              className="border border-[#7A9482] text-[#7A9482] px-4 py-2 rounded-xl text-sm font-bold uppercase tracking-wide"
+            >
+              Recursos (PDFs)
+            </Link>
+            <Link
+              to="/blog-editor/new"
+              className="bg-[#7A9482] text-white px-4 py-2 rounded-xl text-sm font-bold uppercase tracking-wide"
+            >
+              Nuevo post
+            </Link>
+          </div>
         </div>
 
         {loading ? (

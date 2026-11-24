@@ -12,6 +12,7 @@ import { slugify, estimateReadingMinutes } from './postUtils';
 import { uploadBlogMedia } from './uploadBlogMedia';
 import { TiptapEditor } from './TiptapEditor';
 import { BlogPostPreview } from './BlogPostPreview';
+import { StringListField } from './StringListField';
 
 interface EditorProfile {
   id: string;
@@ -32,6 +33,10 @@ export const BlogEditorForm = () => {
   const [slugTouched, setSlugTouched] = useState(false);
   const [channel, setChannel] = useState<BlogChannel>('bere');
   const [excerpt, setExcerpt] = useState('');
+  const [tema, setTema] = useState('');
+  const [puntosClave, setPuntosClave] = useState<string[]>([]);
+  const [senalesAlarma, setSenalesAlarma] = useState<string[]>([]);
+  const [referencias, setReferencias] = useState<string[]>([]);
   const [coverImage, setCoverImage] = useState('');
   const [uploadingCover, setUploadingCover] = useState(false);
 
@@ -77,6 +82,10 @@ export const BlogEditorForm = () => {
         setSlugTouched(true);
         setChannel(post.channel);
         setExcerpt(post.excerpt || '');
+        setTema(post.tema || '');
+        setPuntosClave(post.puntos_clave || []);
+        setSenalesAlarma(post.senales_alarma || []);
+        setReferencias(post.referencias || []);
         setCoverImage(post.cover_image || '');
         setContent(post.content);
         setStatus(post.status);
@@ -176,6 +185,10 @@ export const BlogEditorForm = () => {
       slug: slug.trim(),
       channel,
       excerpt: excerpt.trim() || null,
+      tema: tema.trim() || null,
+      puntos_clave: puntosClave.map((v) => v.trim()).filter(Boolean),
+      senales_alarma: senalesAlarma.map((v) => v.trim()).filter(Boolean),
+      referencias: referencias.map((v) => v.trim()).filter(Boolean),
       cover_image: coverImage || null,
       content: postContent,
       reading_time_minutes: readingTimeMinutes,
@@ -340,6 +353,19 @@ export const BlogEditorForm = () => {
 
             <div>
               <label className="block text-xs font-bold uppercase tracking-wide text-[#8B5E3C] mb-1">
+                Tema (etiqueta para filtros del canal)
+              </label>
+              <input
+                type="text"
+                value={tema}
+                onChange={(e) => setTema(e.target.value)}
+                className="w-full px-3 py-2 rounded-xl border border-[#7A9482]/30 bg-white"
+                placeholder="Ej. Lactancia, Embarazo, Posparto..."
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-wide text-[#8B5E3C] mb-1">
                 Colaboradores
               </label>
               <div className="flex flex-wrap gap-4 bg-white px-3 py-2 rounded-xl border border-[#7A9482]/30">
@@ -373,6 +399,27 @@ export const BlogEditorForm = () => {
                 placeholder="Resumen corto — se usa en el listado y como descripción al compartir"
               />
             </div>
+
+            <StringListField
+              label={'Puntos clave (caja "En resumen")'}
+              placeholder="Ej. El calostro de los primeros días es poco en cantidad y suficiente."
+              values={puntosClave}
+              onChange={setPuntosClave}
+            />
+
+            <StringListField
+              label="Señales que merecen consulta (caja de alerta)"
+              placeholder="Ej. Dolor en el pezón que no mejora o grietas que sangran."
+              values={senalesAlarma}
+              onChange={setSenalesAlarma}
+            />
+
+            <StringListField
+              label="Referencias"
+              placeholder="Ej. Guía de la OMS sobre lactancia, 2023, [enlace]"
+              values={referencias}
+              onChange={setReferencias}
+            />
 
             <div>
               <label className="block text-xs font-bold uppercase tracking-wide text-[#8B5E3C] mb-1">
@@ -410,6 +457,9 @@ export const BlogEditorForm = () => {
                 coverImage={coverImage}
                 readingTimeMinutes={readingTimePreview}
                 content={editor?.getJSON() ?? content}
+                puntosClave={puntosClave}
+                senalesAlarma={senalesAlarma}
+                referencias={referencias}
               />
             </div>
           </div>

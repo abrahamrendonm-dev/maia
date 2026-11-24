@@ -72,9 +72,9 @@ function App() {
       await supabase.auth.signOut();
       localStorage.clear();
       sessionStorage.clear();
-      window.location.replace('/');
-    } catch (error) { 
-      window.location.href = '/'; 
+      window.location.replace('/maia');
+    } catch (error) {
+      window.location.href = '/maia';
     }
   };
 

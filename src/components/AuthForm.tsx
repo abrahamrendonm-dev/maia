@@ -44,7 +44,7 @@ export const AuthForm = () => {
     const handleGoogleLogin = async () => {
         const { error } = await supabase.auth.signInWithOAuth({
             provider: 'google',
-            options: { redirectTo: window.location.origin }
+            options: { redirectTo: `${window.location.origin}/maia` }
         });
         if (error) toast.error("Error al conectar con Google");
     };

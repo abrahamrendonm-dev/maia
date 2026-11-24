@@ -5,7 +5,11 @@ import { createClient } from '@supabase/supabase-js';
 export const config = { runtime: 'nodejs' };
 
 const BLOG_CHANNELS = ['bere', 'cognicion'];
-const BLOG_BASE_URL = 'https://maia-pearl.vercel.app';
+// TODO: una vez que guardianadelavida.com esté conectado en Vercel (DNS +
+// dashboard), confirmar que este dominio resuelve antes de dar por buena la
+// vista previa de redes sociales — hasta entonces los bots seguirán viendo
+// esta URL en og:url, que no sirve si el dominio aún no responde.
+const BLOG_BASE_URL = 'https://guardianadelavida.com';
 
 // No se importa src/services/supabaseClient.ts: ese archivo lee
 // import.meta.env, que Vite resuelve solo al compilar el bundle del
@@ -61,7 +65,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return sendNotFound(res);
   }
 
-  const postUrl = `${BLOG_BASE_URL}/blog/${channel}/${slug}`;
+  const postUrl = `${BLOG_BASE_URL}/${channel}/${slug}`;
   const title = escapeHtml(post.title);
   const description = escapeHtml(post.excerpt ?? '');
   const image = post.cover_image ? escapeHtml(post.cover_image) : '';

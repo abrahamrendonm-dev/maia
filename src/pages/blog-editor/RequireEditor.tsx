@@ -45,10 +45,11 @@ export const RequireEditor = ({ children }: RequireEditorProps) => {
   }
 
   // Mismo destino al que el resto de la app manda a cualquier usuario sin
-  // acceso a una vista: la raíz, donde App.tsx decide qué mostrarle (login
-  // si no hay sesión, o su propia home según su rol real).
+  // acceso a una vista: /maia, donde App.tsx decide qué mostrarle (login si
+  // no hay sesión, o su propia home según su rol real). La raíz del dominio
+  // ya no es la app — es la portada pública del blog.
   if (!isEditor) {
-    return <Navigate to="/" replace />;
+    return <Navigate to="/maia" replace />;
   }
 
   return <>{children}</>;

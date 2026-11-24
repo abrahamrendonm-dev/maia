@@ -1,7 +1,7 @@
 {
   "rewrites": [
     {
-      "source": "/blog/:channel/:slug",
+      "source": "/bere/:slug",
       "has": [
         {
           "type": "header",
@@ -9,7 +9,18 @@
           "value": ".*(facebookexternalhit|WhatsApp|LinkedInBot|Twitterbot|Slackbot|TelegramBot).*"
         }
       ],
-      "destination": "/api/og?channel=:channel&slug=:slug"
+      "destination": "/api/og?channel=bere&slug=:slug"
+    },
+    {
+      "source": "/cognicion/:slug",
+      "has": [
+        {
+          "type": "header",
+          "key": "user-agent",
+          "value": ".*(facebookexternalhit|WhatsApp|LinkedInBot|Twitterbot|Slackbot|TelegramBot).*"
+        }
+      ],
+      "destination": "/api/og?channel=cognicion&slug=:slug"
     },
     {
       "source": "/(.*)",
