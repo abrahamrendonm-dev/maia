@@ -44,12 +44,13 @@ export const RequireEditor = ({ children }: RequireEditorProps) => {
     );
   }
 
-  // Mismo destino al que el resto de la app manda a cualquier usuario sin
-  // acceso a una vista: /maia, donde App.tsx decide qué mostrarle (login si
-  // no hay sesión, o su propia home según su rol real). La raíz del dominio
-  // ya no es la app — es la portada pública del blog.
   if (!isEditor) {
-    return <Navigate to="/maia" replace />;
+    // Sin sesión: login propio del blog, no el de MAIA — son logins
+    // separados a propósito, aunque compartan la misma cuenta por debajo.
+    // Con sesión pero sin role='editor': es un usuario real de MAIA (mamá,
+    // pareja, etc.) que no es editor, así que su destino correcto sigue
+    // siendo /maia, su app de verdad.
+    return <Navigate to={user ? '/maia' : '/blog-editor/login'} replace />;
   }
 
   return <>{children}</>;

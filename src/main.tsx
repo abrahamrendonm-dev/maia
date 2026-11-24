@@ -8,6 +8,7 @@ import { BlogHome } from './pages/blog/BlogHome.tsx'
 import { BlogChannelPage } from './pages/blog/BlogChannelPage.tsx'
 import { BlogPostPage } from './pages/blog/BlogPostPage.tsx'
 import { RequireEditor } from './pages/blog-editor/RequireEditor.tsx'
+import { BlogEditorLogin } from './pages/blog-editor/BlogEditorLogin.tsx'
 import { BlogEditorList } from './pages/blog-editor/BlogEditorList.tsx'
 import { BlogEditorForm } from './pages/blog-editor/BlogEditorForm.tsx'
 import { BlogResourcesAdmin } from './pages/blog-editor/BlogResourcesAdmin.tsx'
@@ -23,6 +24,7 @@ createRoot(document.getElementById('root')!).render(
       <Toaster position="top-center" richColors closeButton />
       <Routes>
         <Route path="/" element={<BlogHome />} />
+        <Route path="/blog-editor/login" element={<BlogEditorLogin />} />
         <Route
           path="/blog-editor"
           element={
