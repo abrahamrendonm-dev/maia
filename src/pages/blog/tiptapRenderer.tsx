@@ -93,7 +93,10 @@ function renderNode(node: TiptapNode, key: number): ReactNode {
       return <li key={key}>{renderChildren(node.content)}</li>;
     case 'blockquote':
       return (
-        <blockquote key={key} className="border-l-2 border-current/30 pl-4 italic mb-6">
+        <blockquote
+          key={key}
+          className="border-l-[3px] border-[#8B5E3C] pl-7 py-2 my-2 text-2xl leading-relaxed italic text-[#4A3A2C]"
+        >
           {renderChildren(node.content)}
         </blockquote>
       );

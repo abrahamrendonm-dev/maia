@@ -17,7 +17,9 @@ interface PostCardProps {
   post: PostCardData;
   // 'grid': tarjeta vertical (imagen arriba) — portada del blog.
   // 'row': fila horizontal (imagen a la izquierda) — listado de un canal.
-  variant?: 'grid' | 'row';
+  // 'minimal': sin imagen, solo tema/título/min de lectura — "Sigue leyendo"
+  // al final de un artículo.
+  variant?: 'grid' | 'row' | 'minimal';
 }
 
 function formatDate(iso: string) {
@@ -55,6 +57,25 @@ export const PostCard = ({ post, variant = 'grid' }: PostCardProps) => {
             {post.readingTimeMinutes != null ? `${post.readingTimeMinutes} min de lectura` : null}
           </span>
         </div>
+      </Link>
+    );
+  }
+
+  if (variant === 'minimal') {
+    return (
+      <Link
+        to={`/${post.channel}/${post.slug}`}
+        className="flex flex-col gap-2.5 p-6 bg-[#FFFDF9] border border-[#E4DED4] rounded-2xl no-underline text-[#2D3436]"
+      >
+        {post.tema && (
+          <span className="text-xs font-bold tracking-wide uppercase text-[#8B5E3C]">{post.tema}</span>
+        )}
+        <span className="font-semibold text-[21px] leading-snug">{post.title}</span>
+        {post.readingTimeMinutes != null && (
+          <span className="font-sans text-[13px] font-semibold text-[#5C6466]">
+            {post.readingTimeMinutes} min de lectura
+          </span>
+        )}
       </Link>
     );
   }

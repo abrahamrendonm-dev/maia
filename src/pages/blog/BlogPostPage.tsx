@@ -21,6 +21,13 @@ interface Post {
   puntos_clave: string[];
   senales_alarma: string[];
   referencias: string[];
+  published_at: string | null;
+  updated_at: string;
+}
+
+interface Author {
+  display_name: string | null;
+  bio: string | null;
 }
 
 function setMetaTag(attr: 'name' | 'property', key: string, content: string) {
@@ -33,10 +40,14 @@ function setMetaTag(attr: 'name' | 'property', key: string, content: string) {
   el.setAttribute('content', content);
 }
 
+function formatDate(iso: string) {
+  return new Date(iso).toLocaleDateString('es-MX', { year: 'numeric', month: 'long', day: 'numeric' });
+}
+
 export const BlogPostPage = () => {
   const { channel, slug } = useParams<{ channel: string; slug: string }>();
   const [post, setPost] = useState<Post | null>(null);
-  const [authorNames, setAuthorNames] = useState<string[]>([]);
+  const [authors, setAuthors] = useState<Author[]>([]);
   const [relacionados, setRelacionados] = useState<PostCardData[]>([]);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
@@ -55,7 +66,7 @@ export const BlogPostPage = () => {
       const { data: postData, error } = await supabase
         .from('blog_posts')
         .select(
-          'id, title, excerpt, content, cover_image, reading_time_minutes, tema, puntos_clave, senales_alarma, referencias',
+          'id, title, excerpt, content, cover_image, reading_time_minutes, tema, puntos_clave, senales_alarma, referencias, published_at, updated_at',
         )
         .eq('channel', channel)
         .eq('slug', slug)
@@ -64,7 +75,7 @@ export const BlogPostPage = () => {
 
       if (error || !postData) {
         setPost(null);
-        setAuthorNames([]);
+        setAuthors([]);
         setRelacionados([]);
         setLoading(false);
         setNotFound(true);
@@ -76,23 +87,23 @@ export const BlogPostPage = () => {
       // post_authors.author_id referencia auth.users(id), no public.profiles(id),
       // así que PostgREST no puede embeber profiles directamente en un solo select:
       // se resuelve en dos pasos.
-      const { data: authors } = await supabase
+      const { data: postAuthors } = await supabase
         .from('post_authors')
         .select('author_id')
         .eq('post_id', postData.id);
 
-      if (authors && authors.length > 0) {
+      if (postAuthors && postAuthors.length > 0) {
         const { data: profiles } = await supabase
           .from('profiles')
-          .select('id, display_name')
+          .select('display_name, bio')
           .in(
             'id',
-            authors.map((a) => a.author_id),
+            postAuthors.map((a) => a.author_id),
           );
 
-        setAuthorNames((profiles || []).map((p) => p.display_name).filter((n): n is string => !!n));
+        setAuthors(profiles || []);
       } else {
-        setAuthorNames([]);
+        setAuthors([]);
       }
 
       const { data: relacionadosData } = await supabase
@@ -150,6 +161,9 @@ export const BlogPostPage = () => {
     return <BlogNotFound />;
   }
 
+  const mainAuthor = authors[0];
+  const authorNames = authors.map((a) => a.display_name).filter((n): n is string => !!n);
+
   return (
     <div className="bg-[#F4EEE2] font-serif min-h-screen">
       {/* Encabezado mínimo (lectura sin distracciones) */}
@@ -162,7 +176,7 @@ export const BlogPostPage = () => {
             Volver al blog
           </Link>
           <Link to="/" className="font-serif font-bold text-lg tracking-wide text-[#2D3436] no-underline">
-            Guardiana de la Vida
+            MAIA
           </Link>
         </div>
       </header>
@@ -190,12 +204,25 @@ export const BlogPostPage = () => {
               <p className="m-0 text-xl leading-relaxed text-[#4A5254] italic">{post.excerpt}</p>
             )}
 
-            {(authorNames.length > 0 || post.reading_time_minutes != null) && (
-              <div className="font-sans flex flex-wrap items-center gap-4 py-4 border-t border-b border-[#E2D9C8] text-sm font-semibold text-[#5C6466]">
-                {authorNames.length > 0 && <span className="text-[#2D3436] font-bold">{authorNames.join(' y ')}</span>}
-                {post.reading_time_minutes != null && <span>{post.reading_time_minutes} min de lectura</span>}
-              </div>
-            )}
+            <div className="font-sans flex flex-wrap items-center gap-4 py-4 border-t border-b border-[#E2D9C8] text-sm font-semibold text-[#5C6466]">
+              {mainAuthor?.display_name && (
+                <span className="w-11 h-11 shrink-0 rounded-full bg-[#8B5E3C] text-[#FFFDF9] flex items-center justify-center font-bold">
+                  {mainAuthor.display_name.charAt(0).toUpperCase()}
+                </span>
+              )}
+              {authorNames.length > 0 && (
+                <span className="flex flex-col gap-0.5">
+                  <span className="text-[#2D3436] font-bold">{authorNames.join(' y ')}</span>
+                  {mainAuthor?.bio && <span>{mainAuthor.bio}</span>}
+                </span>
+              )}
+              <span className="grow" />
+              <span>
+                {post.published_at ? formatDate(post.published_at) : ''}
+                {post.published_at && post.reading_time_minutes != null ? ' · ' : ''}
+                {post.reading_time_minutes != null ? `${post.reading_time_minutes} min de lectura` : ''}
+              </span>
+            </div>
           </div>
 
           {post.cover_image && <img src={post.cover_image} alt="" className="rounded-2xl w-full" />}
@@ -205,6 +232,10 @@ export const BlogPostPage = () => {
           <div className="text-xl leading-[1.75]">{renderTiptapContent(post.content)}</div>
 
           <SenalesAlarma items={post.senales_alarma} />
+
+          <div className="font-sans flex flex-wrap gap-6 py-6 border-t border-[#E2D9C8] text-sm font-semibold text-[#5C6466]">
+            <span>Última revisión: {formatDate(post.updated_at)}</span>
+          </div>
 
           <Referencias items={post.referencias} />
 
@@ -223,7 +254,7 @@ export const BlogPostPage = () => {
               </h2>
               <div className="grid grid-cols-[repeat(auto-fit,minmax(280px,1fr))] gap-6">
                 {relacionados.map((r) => (
-                  <PostCard key={r.slug} post={r} variant="grid" />
+                  <PostCard key={r.slug} post={r} variant="minimal" />
                 ))}
               </div>
             </div>

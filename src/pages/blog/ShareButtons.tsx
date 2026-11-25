@@ -1,12 +1,13 @@
 import { useState } from 'react';
-import { Share2, Facebook, Linkedin, MessageCircle, Copy, Check } from 'lucide-react';
+import { Share2, Copy, Check } from 'lucide-react';
 
 interface ShareButtonsProps {
   title: string;
   excerpt: string | null;
 }
 
-const linkClass = 'flex items-center gap-2 text-sm text-[#2D3436]/60 hover:text-[#2D3436] transition-colors';
+const pillClass =
+  'px-[18px] py-2.5 rounded-full bg-[#FFFDF9] border border-[#D6CFC3] text-[#2D3436] no-underline text-sm font-semibold';
 
 export const ShareButtons = ({ title, excerpt }: ShareButtonsProps) => {
   const [copied, setCopied] = useState(false);
@@ -33,45 +34,44 @@ export const ShareButtons = ({ title, excerpt }: ShareButtonsProps) => {
   const encodedTitleAndUrl = encodeURIComponent(`${title} ${url}`);
 
   return (
-    <div className="mt-12 pt-8 border-t border-[#2D3436]/10 flex flex-wrap gap-6">
+    <div className="font-sans flex flex-wrap items-center gap-3 py-6 border-t border-b border-[#E2D9C8]">
+      <span className="text-[15px] font-bold mr-2">Compartir este artículo</span>
+
       {/* navigator.share ya no implica "es móvil" — varios navegadores de
           escritorio también lo implementan. Se muestra como opción extra,
           no en lugar de los enlaces directos. */}
       {canNativeShare && (
-        <button type="button" onClick={handleNativeShare} className={linkClass}>
-          <Share2 size={16} />
+        <button type="button" onClick={handleNativeShare} className={`${pillClass} flex items-center gap-1.5`}>
+          <Share2 size={14} />
           Compartir
         </button>
       )}
+
+      <a href={`https://wa.me/?text=${encodedTitleAndUrl}`} target="_blank" rel="noopener noreferrer" className={pillClass}>
+        WhatsApp
+      </a>
       <a
         href={`https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`}
         target="_blank"
         rel="noopener noreferrer"
-        className={linkClass}
+        className={pillClass}
       >
-        <Facebook size={16} />
         Facebook
       </a>
       <a
         href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodedUrl}`}
         target="_blank"
         rel="noopener noreferrer"
-        className={linkClass}
+        className={pillClass}
       >
-        <Linkedin size={16} />
         LinkedIn
       </a>
-      <a
-        href={`https://wa.me/?text=${encodedTitleAndUrl}`}
-        target="_blank"
-        rel="noopener noreferrer"
-        className={linkClass}
+      <button
+        type="button"
+        onClick={handleCopyLink}
+        className="px-[18px] py-2.5 rounded-full bg-[#4A6352] text-[#FFFDF9] text-sm font-bold flex items-center gap-1.5"
       >
-        <MessageCircle size={16} />
-        WhatsApp
-      </a>
-      <button type="button" onClick={handleCopyLink} className={linkClass}>
-        {copied ? <Check size={16} /> : <Copy size={16} />}
+        {copied ? <Check size={14} /> : <Copy size={14} />}
         {copied ? '¡Copiado!' : 'Copiar enlace'}
       </button>
     </div>
